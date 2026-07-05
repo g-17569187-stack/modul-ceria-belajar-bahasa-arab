@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modul Ceria Belajar Bahasa Arab Tahun 2</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pastelBlue: '#A2D2FF',
+                        pastelPink: '#FFAFCC',
+                        pastelYellow: '#FFFFFC',
+                        pastelGreen: '#B9FBC0',
+                        darkText: '#4A4A4A',
+                        primaryGreen: '#2D6A4F',
+                        btnRed: '#FF7096',
+                        btnRedShadow: '#C9184A',
+                        btnGreenShadow: '#95D5B2',
+                        cardShadow: '#89C2D9'
+                    },
+                    fontFamily: {
+                        sans: ['Quicksand', 'sans-serif'],
+                        arabic: ['Amiri', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom Styles -->
+    <style>
+        body {
+            background-color: #A2D2FF;
+            color: #4A4A4A;
+        }
+        
+        .page-section { 
+            display: none; 
+        }
+        
+        .page-section.active { 
+            display: block; 
+            animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+
+        .btn-bounce {
+            transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+        }
+
+        .btn-bounce:active {
+            transform: translateY(5px);
+            box-shadow: 0 0px 0 transparent !important;
+        }
+
+        .card-shadow {
+            box-shadow: 0 10px 0 #89C2D9;
+        }
+
+        @keyframes fadeInUp { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* GAMIFICATION: Animasi Getaran (Shake) untuk Jawapan Salah */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-6px); }
+            20%, 40%, 60%, 80% { transform: translateX(6px); }
+        }
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        /* GAMIFICATION: Animasi Maskot Lembut */
+        @keyframes mascotFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(3deg); }
+        }
+        .animate-mascot {
+            animation: mascotFloat 3s ease-in-out infinite;
+        }
+
+        /* Custom Scrollbar for notes */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #FFAFCC; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FF7096; }
+
+        /* PRINT STYLES: Khusus untuk mencetak sijil yang kemas */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #print-area, #print-area * {
+                visibility: visible;
+            }
+            #print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 sm:p-6 relative overflow-x-hidden">
+
+    <!-- Canvas untuk Letusan Bintang (Confetti) -->
+    <canvas id="confetti-canvas" class="pointer-events-none fixed inset-0 z-50 w-full h-full hidden"></canvas>
+
+    <!-- GAMIFICATION: Maskot Reaktif Terapung di Penjuru Bawah Kanan / Atas Kanan semasa bermain -->
+    <div id="mascot-container" class="fixed bottom-4 right-4 z-40 flex items-center gap-3 bg-white/95 border-4 border-pastelPink p-3 rounded-2xl shadow-xl animate-mascot max-w-[240px] sm:max-w-xs transition-all duration-300">
+        <div id="mascot-avatar" class="text-4xl sm:text-5xl select-none">😊</div>
+        <div class="flex flex-col">
+            <span class="text-xs font-bold text-pastelPink uppercase tracking-wider">Maskot Ceria</span>
+            <span id="mascot-bubble" class="text-sm font-bold text-darkText leading-tight">Jom belajar!</span>
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div id="app-container" class="w-full max-w-4xl pb-16">
+        
+        <!-- Bar Pengurusan Muzik Latar (BGM) -->
+        <div class="flex justify-end mb-4">
+            <button id="bgm-toggle" onclick="playClick(); toggleBGM()" class="bg-white/80 hover:bg-white text-darkText font-bold px-4 py-2 rounded-full shadow-md flex items-center gap-2 text-sm btn-bounce transition-all">
+                <span>🔇</span> Muzik Latar: Padam
+            </button>
+        </div>
+        
+        <!-- Halaman 1: Landing Page -->
+        <section id="page-landing" class="page-section active">
+            <div class="bg-white p-6 sm:p-12 rounded-[30px] text-center card-shadow max-w-2xl mx-auto">
+                <!-- INTERVENSI KAJIAN: Tajuk Utama Dinamik Baru -->
+                <h1 class="text-primaryGreen text-3xl sm:text-5xl font-bold mb-4">Modul Ceria Belajar Bahasa Arab</h1>
+                
+                <div class="flex justify-center mb-6">
+                    <div class="w-28 h-32 bg-pastelYellow rounded-full flex items-center justify-center border-4 border-pastelPink">
+                        <span class="text-6xl">🧑‍🎓</span>
+                    </div>
+                </div>
+
+                <!-- PEDAGOGI: Kad Standard Kandungan & Pembelajaran Lebih Kemas -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 text-left">
+                    <div class="bg-blue-50/80 p-4 rounded-2xl border-2 border-blue-200">
+                        <span class="block text-xs font-bold text-blue-600 uppercase tracking-wide mb-1">Standard Kandungan (1.3)</span>
+                        <p class="text-xs sm:text-sm font-bold text-gray-700 leading-relaxed font-sans mb-2">
+                            الاستماع إلى الكلمات حسب المحاور المقترحة ونطقها نطقًا صحيحًا
+                        </p>
+                        <p class="text-[11px] text-gray-500 italic">Mendengar perkataan dan menyebutnya dengan betul.</p>
+                    </div>
+                    <div class="bg-pink-50/80 p-4 rounded-2xl border-2 border-pink-200">
+                        <span class="block text-xs font-bold text-pink-600 uppercase tracking-wide mb-1">Standard Pembelajaran (1.3.3)</span>
+                        <p class="text-xs sm:text-sm font-bold text-gray-700 leading-relaxed font-sans mb-2">
+                            القدرة على التعرف على الكلمات المسموعة
+                        </p>
+                        <p class="text-[11px] text-gray-500 italic">Mendengar dan mengenal pasti perkataan yang didengar.</p>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col items-center gap-4">
+                    <input type="text" id="student-name" placeholder="Sila masukkan nama anda..." 
+                           class="w-full max-w-md p-4 rounded-2xl border-4 border-pastelPink text-lg focus:outline-none focus:border-btnRed transition-colors">
+                    
+                    <p id="error-msg" class="text-red-500 font-bold hidden">Sila masukkan nama anda untuk mula!</p>
+                    
+                    <button id="btn-start" onclick="playClick(); startApp()" 
+                            class="bg-btnRed text-white px-8 py-4 rounded-2xl text-xl font-bold btn-bounce w-full max-w-md"
+                            style="box-shadow: 0 6px 0 #C9184A;">
+                        Mula Belajar 🚀
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Halaman 2: Nota Pembelajaran (Dinaik taraf dengan Pilihan Tema) -->
+        <section id="page-notes" class="page-section">
+            <div class="bg-white p-6 sm:p-8 rounded-[30px] card-shadow">
+                <div class="flex justify-between items-center mb-6 border-b-4 border-pastelBlue pb-4">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-primaryGreen">Nota Pembelajaran 📝</h2>
+                    <span class="bg-pastelPink text-white px-4 py-2 rounded-xl font-bold">Kosa Kata Tahun 2</span>
+                </div>
+                
+                <!-- SEKSYEN PILIHAN TEMA (Mula-mula Papar Ini) -->
+                <div id="theme-selection-container" class="space-y-6">
+                    <h3 class="text-xl font-bold text-gray-600 text-center mb-4">📚 Pilih Tema Pembelajaran</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <button onclick="playClick(); selectTheme('Diri & Rakan')" class="bg-blue-50 border-4 border-blue-200 hover:border-blue-400 p-6 rounded-[24px] text-center btn-bounce flex flex-col items-center gap-3">
+                            <span class="text-5xl">👦</span>
+                            <span class="text-xl font-bold text-blue-800">Diri dan Rakan</span>
+                        </button>
+                        <button onclick="playClick(); selectTheme('Keluarga')" class="bg-green-50 border-4 border-green-200 hover:border-green-400 p-6 rounded-[24px] text-center btn-bounce flex flex-col items-center gap-3">
+                            <span class="text-5xl">👨‍👩‍👧</span>
+                            <span class="text-xl font-bold text-green-800">Keluarga</span>
+                        </button>
+                        <button onclick="playClick(); selectTheme('Peralatan Sekolah')" class="bg-yellow-50 border-4 border-yellow-200 hover:border-yellow-400 p-6 rounded-[24px] text-center btn-bounce flex flex-col items-center gap-3">
+                            <span class="text-5xl">🎒</span>
+                            <span class="text-xl font-bold text-yellow-800">Peralatan Sekolah</span>
+                        </button>
+                        <button onclick="playClick(); selectTheme('Anggota Badan')" class="bg-pink-50 border-4 border-pink-200 hover:border-pink-400 p-6 rounded-[24px] text-center btn-bounce flex flex-col items-center gap-3">
+                            <span class="text-5xl">💪</span>
+                            <span class="text-xl font-bold text-pink-800">Anggota Badan</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SEKSYEN KAD INDIVIDU (Tersembunyi Mula-mula) -->
+                <div id="theme-cards-container" class="hidden space-y-6">
+                    <div class="flex justify-between items-center">
+                        <button onclick="playClick(); backToThemes()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold px-4 py-2 rounded-xl text-sm btn-bounce flex items-center gap-2">
+                            ⬅️ Kembali ke Senarai Tema
+                        </button>
+                        <span id="selected-theme-title" class="text-lg font-bold text-primaryGreen bg-pastelYellow px-4 py-1.5 rounded-full border-2 border-pastelPink">Tema</span>
+                    </div>
+                    
+                    <div id="flashcard-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 p-2">
+                        <!-- Kad dinamik di bawah tema akan dijana di sini -->
+                    </div>
+                </div>
+                
+                <div class="mt-8 text-center flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <button onclick="playClick(); goHomeWithoutReload()" 
+                            class="bg-pastelBlue text-blue-800 px-10 py-4 rounded-2xl text-xl font-bold btn-bounce inline-block w-full sm:w-auto"
+                            style="box-shadow: 0 6px 0 #60A5FA;">
+                        🏠 Halaman Utama
+                    </button>
+                    <button onclick="playClick(); startCountdownSequence()" 
+                            class="bg-btnRed text-white px-10 py-4 rounded-2xl text-xl font-bold btn-bounce inline-block w-full sm:w-auto"
+                            style="box-shadow: 0 6px 0 #C9184A;">
+                        Mula Bermain! 🎮
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Halaman Sampingan: Countdown (Skrin Persediaan) -->
+        <section id="page-countdown" class="page-section">
+            <div class="bg-white p-12 rounded-[30px] text-center card-shadow max-w-xl mx-auto flex flex-col items-center justify-center min-h-[350px]">
+                <div id="countdown-text" class="text-8xl font-bold text-btnRed select-none transition-all duration-300 transform scale-75 opacity-0">
+                    3
+                </div>
+                <div id="instruction-note" class="hidden mt-8 max-w-md">
+                    <span class="text-6xl block mb-4">🎯</span>
+                    <p class="text-xl sm:text-2xl font-bold text-primaryGreen leading-relaxed">
+                        "Dengar audio terlebih dahulu. Kemudian pilih perkataan Bahasa Arab yang betul."
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Halaman 3: Permainan Interaktif -->
+        <section id="page-game" class="page-section">
+            
+            <!-- Statistik Top Bar -->
+            <div class="flex flex-wrap justify-between items-center bg-white p-4 rounded-2xl card-shadow mb-6 gap-2 font-bold text-sm sm:text-lg">
+                <div class="bg-pastelBlue/30 px-4 py-2 rounded-xl text-primaryGreen">
+                    👤 <span id="display-name"></span>
+                </div>
+                <!-- INTERVENSI KAJIAN: Paparan visual Aras dinamik dipetakan daripada JavaScript -->
+                <div class="bg-pastelYellow px-4 py-2 rounded-xl border-2 border-yellow-200">
+                    ⭐ Aras: <span id="display-level" class="text-orange-500">1</span>
+                </div>
+                <div class="bg-pastelGreen/50 px-4 py-2 rounded-xl text-green-700">
+                    🏆 Skor: <span id="display-score">0</span>
+                </div>
+                <div class="bg-pastelPink/30 px-4 py-2 rounded-xl text-pink-600">
+                    📝 Soalan: <span id="display-progress">1/15</span>
+                </div>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="w-full bg-white h-4 rounded-full mb-6 border-2 border-pastelBlue overflow-hidden">
+                <div id="progress-bar-fill" class="bg-btnRed h-full transition-all duration-300 ease-out w-0 rounded-full"></div>
+            </div>
+
+            <!-- Kad Permainan -->
+            <div class="bg-white p-6 sm:p-10 rounded-[30px] text-center card-shadow relative">
+                
+                <!-- Audio Button (Soalan) -->
+                <button onclick="playClick(); playQuestionAudio()" 
+                        class="bg-blue-400 text-white text-xl sm:text-2xl font-bold py-6 px-8 rounded-2xl btn-bounce w-full max-w-md mx-auto flex items-center justify-center gap-4 mb-8"
+                        style="box-shadow: 0 6px 0 #2563EB;">
+                    <span class="text-4xl">🔊</span> Klik untuk Dengar
+                </button>
+
+                <p class="text-gray-500 font-bold mb-4">Pilih perkataan Bahasa Arab yang betul:</p>
+
+                <!-- Pilihan Jawapan -->
+                <div id="choices-container" class="choices-grid grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                    <!-- Pilihan dijana oleh script.js -->
+                </div>
+                
+                <!-- Maklum Balas -->
+                <div id="feedback-area" class="mt-8 h-16 flex items-center justify-center text-2xl font-bold transition-all"></div>
+            </div>
+        </section>
+
+        <!-- Halaman 4: Paparan Akhir -->
+        <section id="page-results" class="page-section">
+            <div class="bg-white p-8 sm:p-12 rounded-[30px] text-center card-shadow max-w-2xl mx-auto">
+                <div class="text-7xl mb-6">🏆</div>
+                <h2 class="text-primaryGreen text-4xl font-bold mb-4" id="result-title">Mumtaz! (Hebat)</h2>
+                
+                <div class="bg-pastelYellow border-4 border-pastelBlue rounded-2xl p-6 mb-8 text-xl text-left inline-block w-full sm:w-auto min-w-[300px]">
+                    <p class="mb-2 font-bold text-gray-600">🧑‍🎓 Nama: <span id="final-name" class="float-right text-primaryGreen"></span></p>
+                    <p class="mb-2 font-bold text-gray-600">🎯 Markah Penuh: <span class="float-right text-btnRed">25</span></p>
+                    <p class="mb-2 font-bold text-gray-600">⭐ Skor Anda: <span id="final-score" class="float-right text-primaryGreen"></span></p>
+                    
+                    <hr class="my-4 border-gray-300">
+                    
+                    <p class="mb-2 font-bold text-gray-600">✅ Jawapan Betul: <span id="final-correct" class="float-right text-green-600"></span></p>
+                    <p class="mb-2 font-bold text-gray-600">❌ Jawapan Salah: <span id="final-incorrect" class="float-right text-red-500"></span></p>
+                    <p class="mb-2 font-bold text-gray-600">⏱️ Masa Diambil: <span id="final-time" class="float-right text-blue-500"></span></p>
+                    
+                    <hr class="my-4 border-gray-300">
+                    <p class="font-bold text-gray-600 text-2xl">📊 Ketepatan: <span id="final-accuracy" class="float-right text-blue-500"></span></p>
+                </div>
+
+                <!-- INTERVENSI KAJIAN: Teks kejayaan akhir diubah bersesuaian dengan standard kemahiran mendengar -->
+                <p class="text-lg font-bold text-gray-600 mb-8">Tahniah kerana berjaya menguasai kemahiran mendengar dan mengenal pasti perkataan Bahasa Arab!</p>
+                
+                <!-- GAMIFICATION: Pautan Sijil Digital & Hantar Keputusan -->
+                <div class="mb-8 flex flex-wrap justify-center gap-4">
+                    <button id="btn-view-certificate" onclick="playClick(); generateCertificate()" class="bg-amber-400 hover:bg-amber-500 text-amber-900 px-8 py-4 rounded-2xl text-xl font-bold btn-bounce" style="box-shadow: 0 6px 0 #D97706;">
+                        📄 Lihat Sijil Digital
+                    </button>
+                    <button id="btn-submit-teacher" onclick="playClick(); sendToTeacher()" class="bg-purple-500 text-white px-8 py-4 rounded-2xl text-xl font-bold btn-bounce" style="box-shadow: 0 6px 0 #7E22CE;">
+                        📤 Hantar Keputusan Kepada Guru
+                    </button>
+                </div>
+                <div class="mb-8 text-center">
+                    <span id="submit-message" class="hidden font-bold text-lg"></span>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="playClick(); restartGame()" class="bg-pastelGreen text-green-800 px-8 py-4 rounded-2xl text-xl font-bold btn-bounce" style="box-shadow: 0 6px 0 var(--btnGreenShadow);">
+                        🔄 Main Semula
+                    </button>
+                    <button onclick="playClick(); clearAndGoHome()" class="bg-pastelBlue text-blue-800 px-8 py-4 rounded-2xl text-xl font-bold btn-bounce" style="box-shadow: 0 6px 0 #60A5FA;">
+                        🏠 Ke Menu Utama
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- DIGITAL CERTIFICATE MODAL OVERLAY -->
+    <div id="certificate-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-[32px] p-6 sm:p-10 max-w-3xl w-full relative overflow-y-auto max-h-[90vh] shadow-2xl">
+            <!-- Close Modal -->
+            <button onclick="playClick(); closeCertificate()" class="no-print absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 text-gray-700 w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl transition-all">
+                ✕
+            </button>
+            
+            <!-- Sijil Frame -->
+            <div id="print-area" class="border-[12px] border-double border-amber-500 p-6 sm:p-12 text-center bg-amber-50/50 rounded-2xl relative">
+                <!-- Watermark Decor -->
+                <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none">
+                    <span class="text-[12rem] sm:text-[20rem]">🏆</span>
+                </div>
+                
+                <span class="text-4xl sm:text-5xl block mb-4 select-none">📜</span>
+                <h1 class="font-sans font-bold text-amber-800 text-3xl sm:text-4xl tracking-wider mb-2">SIJIL PENGHARGAAN</h1>
+                <p class="text-xs uppercase tracking-widest text-amber-600 font-bold mb-6">Modul Ceria Belajar Bahasa Arab</p>
+                
+                <p class="text-gray-600 italic text-sm mb-2">Dengan ini disahkan bahawa</p>
+                <p id="cert-name" class="font-sans font-bold text-2xl sm:text-4xl text-primaryGreen my-4 underline decoration-amber-500 decoration-wavy">NAMA MURID</p>
+                
+                <p class="text-gray-600 text-sm max-w-md mx-auto mb-6">
+                    telah berjaya menyelesaikan cabaran penilaian interaktif dengan cemerlang di dalam:
+                </p>
+                <h2 class="font-sans font-bold text-amber-900 text-xl sm:text-2xl mb-6">Modul Ceria Belajar Bahasa Arab Tahun 2</h2>
+                
+                <!-- Keputusan Sijil -->
+                <div class="grid grid-cols-2 gap-4 max-w-sm mx-auto bg-white p-4 rounded-xl border-2 border-amber-200 mb-6">
+                    <div>
+                        <span class="block text-xs text-gray-500 font-bold uppercase">Skor Pencapaian</span>
+                        <span id="cert-score" class="text-xl font-bold text-btnRed">0 / 25</span>
+                    </div>
+                    <div>
+                        <span class="block text-xs text-gray-500 font-bold uppercase">Kadar Ketepatan</span>
+                        <span id="cert-accuracy" class="text-xl font-bold text-primaryGreen">0%</span>
+                    </div>
+                </div>
+
+                <p class="text-xs text-gray-400 mb-8" id="cert-date">Tarikh Pencapaian: 12/12/2026</p>
+                
+                <p class="font-sans font-bold text-amber-800 text-lg italic">"Mumtaz! Usaha Tangga Kejayaan!"</p>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div class="no-print mt-6 flex justify-center gap-4">
+                <button onclick="playClick(); window.print()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-6 py-3 rounded-xl flex items-center gap-2 btn-bounce shadow-md">
+                    🖨️ Cetak Sijil
+                </button>
+                <button onclick="playClick(); simulatePDFDownload()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-6 py-3 rounded-xl flex items-center gap-2 btn-bounce shadow-md">
+                    ⬇️ Muat Turun PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data kosa kata berdasarkan Buku Teks dan DSKP (Tahun 2) dengan Harakat Lengkap, nama fail MP3, dan pelekat emoji kartun
+        const vocabData = [
+            // Aras 1: 3 Huruf (1 Markah)
+            { word: "أَبٌ", meaning: "Ayah", trans: "Abun", level: 1, category: "Keluarga", audio: "abun.mp3", emoji: "👨" },
+            { word: "أُمٌّ", meaning: "Ibu", trans: "Ummun", level: 1, category: "Keluarga", audio: "ummun.mp3", emoji: "👩" },
+            { word: "أَخٌ", meaning: "Abang/Adik Lelaki", trans: "Akhun", level: 1, category: "Keluarga", audio: "akhun.mp3", emoji: "👦" },
+            { word: "جَدٌّ", meaning: "Datuk", trans: "Jaddun", level: 1, category: "Keluarga", audio: "jaddun.mp3", emoji: "👴" },
+            { word: "عَمٌّ", meaning: "Bapa Saudara", trans: "Ammun", level: 1, category: "Keluarga", audio: "ammun.mp3", emoji: "🧔" },
+            { word: "أَنَا", meaning: "Saya", trans: "Ana", level: 1, category: "Diri & Rakan", audio: "ana.mp3", emoji: "🙋‍♂️" },
+            { word: "مَنْ", meaning: "Siapa", trans: "Man", level: 1, category: "Diri & Rakan", audio: "man.mp3", emoji: "❓" },
+            { word: "فَمٌ", meaning: "Mulut", trans: "Famun", level: 1, category: "Anggota Badan", audio: "famun.mp3", emoji: "👄" },
+            { word: "يَدٌ", meaning: "Tangan", trans: "Yadun", level: 1, category: "Anggota Badan", audio: "yadun.mp3", emoji: "✋" },
+            { word: "خَدٌّ", meaning: "Pipi", trans: "Khaddun", level: 1, category: "Anggota Badan", audio: "khaddun.mp3", emoji: "😊" },
+
+            // Aras 2: 4 Huruf (2 Markah)
+            { word: "أُخْتٌ", meaning: "Kakak/Adik", trans: "Ukhtun", level: 2, category: "Keluarga", audio: "ukhtun.mp3", emoji: "👧" },
+            { word: "جَدَّةٌ", meaning: "Nenek", trans: "Jaddatun", level: 2, category: "Keluarga", audio: "jaddatun.mp3", emoji: "👵" },
+            { word: "عَمَّةٌ", meaning: "Ibu Saudara", trans: "Ammatun", level: 2, category: "Keluarga", audio: "ammatun.mp3", emoji: "👩‍🦱" },
+            { word: "رَأْسٌ", meaning: "Kepala", trans: "Ra'sun", level: 2, category: "Anggota Badan", audio: "rasun.mp3", emoji: "🧑" },
+            { word: "شَعْرٌ", meaning: "Rambut", trans: "Sya'run", level: 2, category: "Anggota Badan", audio: "syarun.mp3", emoji: "💇" },
+            { word: "رِجْلٌ", meaning: "Kaki", trans: "Rijlun", level: 2, category: "Anggota Badan", audio: "rijlun.mp3", emoji: "🦵" },
+            { word: "بَطْنٌ", meaning: "Perut", trans: "Batnun", level: 2, category: "Anggota Badan", audio: "batnun.mp3", emoji: "🧍" },
+            { word: "عَيْنٌ", meaning: "Mata", trans: "Ainun", level: 2, category: "Anggota Badan", audio: "ainun.mp3", emoji: "👁️" },
+            { word: "أَنْفٌ", meaning: "Hidung", trans: "Anfun", level: 2, category: "Anggota Badan", audio: "anfun.mp3", emoji: "👃" },
+            { word: "قَلَمٌ", meaning: "Pensel", trans: "Qalamun", level: 2, category: "Peralatan Sekolah", audio: "qalamun.mp3", emoji: "✏️" },
+
+            // Aras 3: >4 Huruf (3 Markah)
+            { word: "تِلْمِيذٌ", meaning: "Murid (L)", trans: "Tilmiizun", level: 3, category: "Diri & Rakan", audio: "tilmiizun.mp3", emoji: "🧑‍🎓" },
+            { word: "تِلْمِيذَةٌ", meaning: "Murid (P)", trans: "Tilmiizatun", level: 3, category: "Diri & Rakan", audio: "tilmiizatun.mp3", emoji: "👩‍🎓" },
+            { word: "مُعَلِّمٌ", meaning: "Guru (L)", trans: "Mu'allimun", level: 3, category: "Diri & Rakan", audio: "muallimun.mp3", emoji: "👨‍🏫" },
+            { word: "مُعَلِّمَةٌ", meaning: "Guru (P)", trans: "Mu'allimatun", level: 3, category: "Diri & Rakan", audio: "muallimatun.mp3", emoji: "👩‍🏫" },
+            { word: "مِبْرَاةٌ", meaning: "Pengasah", trans: "Mibraatun", level: 3, category: "Peralatan Sekolah", audio: "mibraatun.mp3", emoji: "📐" },
+            { word: "مِقْلَمَةٌ", meaning: "Kotak Pensel", trans: "Miqlamatun", level: 3, category: "Peralatan Sekolah", audio: "miqlamatun.mp3", emoji: "👝" },
+            { word: "مِسْطَرَةٌ", meaning: "Pembaris", trans: "Mistaratun", level: 3, category: "Peralatan Sekolah", audio: "mistaratun.mp3", emoji: "📏" }, 
+            { word: "حَقِيبَةٌ", meaning: "Beg", trans: "Haqiibatun", level: 3, category: "Peralatan Sekolah", audio: "haqiibatun.mp3", emoji: "🎒" },
+            { word: "مِمْحَاةٌ", meaning: "Pemadam", trans: "Mimhaatun", level: 3, category: "Peralatan Sekolah", audio: "mimhaatun.mp3", emoji: "🧽" },
+            { word: "أَسْنَانٌ", meaning: "Gigi", trans: "Asnaanun", level: 3, category: "Anggota Badan", audio: "asnaanun.mp3", emoji: "🦷" }
+        ];
+
+        let gameState = {
+            name: "",
+            score: 0,
+            currentQuestionIndex: 0,
+            shuffledQuestions: [],
+            correctCount: 0,
+            incorrectCount: 0,
+            startTime: null,
+            endTime: null
+        };
+
+        let isAnswerProcessing = false; 
+        let currentAudio = null; 
+        let bgm = null; // Menyimpan objek Audio Musik Latar
+        let bgmEnabled = false; // Status hidup/padam muzik latar
+
+        // --- Core Functions ---
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo(0, 0);
+
+            // ADJUST MASCOT POSITION & SIZE DURING GAME
+            const mascot = document.getElementById('mascot-container');
+            if (pageId === 'page-game') {
+                // Relocate to top right (below BGM toggle) and scale down to avoid overlapping the gameplay UI
+                mascot.classList.remove('bottom-4', 'right-4');
+                mascot.classList.add('top-20', 'right-4', 'scale-75', 'sm:scale-90', 'origin-top-right');
+            } else {
+                // Restore original bottom right location and full scale
+                mascot.classList.add('bottom-4', 'right-4');
+                mascot.classList.remove('top-20', 'scale-75', 'sm:scale-90', 'origin-top-right');
+            }
+        }
+
+        // GAMIFICATION: Bunyi klik butang yang lembut
+        function playClick() {
+            try {
+                const clickAudio = new Audio('audio/click.mp3');
+                clickAudio.volume = 0.3;
+                clickAudio.play().catch(() => {});
+            } catch (e) {}
+        }
+
+        // GAMIFICATION: Bunyi sistem (correct / wrong) dengan audio ducking
+        function playSystemSound(fileName) {
+            try {
+                const sysAudio = new Audio(`audio/${fileName}`);
+                sysAudio.volume = 0.5;
+
+                // Lakukan ducking (volume dikurangkan) jika BGM aktif
+                if (bgm && bgmEnabled && !bgm.paused) {
+                    bgm.volume = 0.05;
+                }
+
+                sysAudio.play().catch(() => {});
+
+                // Pulihkan volume asal sebaik sahaja audio tamat
+                sysAudio.onended = () => {
+                    if (bgm && bgmEnabled && !bgm.paused) {
+                        bgm.volume = 0.25;
+                    }
+                };
+            } catch (e) {}
+        }
+
+        // GAMIFICATION: Inisialisasi dan kawalan BGM
+        function initBGM() {
+            if (!bgm) {
+                bgm = new Audio('audio/bgm.mp3');
+                bgm.loop = true;
+                bgm.volume = 0.25;
+            }
+        }
+
+        function toggleBGM() {
+            initBGM();
+            const btn = document.getElementById('bgm-toggle');
+            if (bgm.paused) {
+                bgm.play().then(() => {
+                    bgmEnabled = true;
+                    btn.innerHTML = `<span>🔊</span> Muzik Latar: Hidup`;
+                    btn.classList.add('bg-pastelGreen/80');
+                }).catch(err => {
+                    console.warn("BGM blocked. Perlu aksi interaksi pertama murid.", err);
+                });
+            } else {
+                bgm.pause();
+                bgmEnabled = false;
+                btn.innerHTML = `<span>🔇</span> Muzik Latar: Padam`;
+                btn.classList.remove('bg-pastelGreen/80');
+            }
+        }
+
+        // Memainkan fail audio MP3 tempatan daripada folder "audio/" dengan Audio Ducking
+        function speak(input) {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+
+            let fileName = "";
+            const item = vocabData.find(v => v.word === input);
+            if (item) {
+                fileName = item.audio;
+            } else {
+                if (input === "أَحْسَنْتَ") {
+                    fileName = "ahsanta.mp3";
+                } else {
+                    fileName = input.toLowerCase().replace(/[^a-z0-9]/g, "") + ".mp3";
+                }
+            }
+
+            try {
+                currentAudio = new Audio(`audio/${fileName}`);
+                currentAudio.volume = 0.7;
+
+                // Lakukan ducking jika BGM sedang aktif
+                if (bgm && bgmEnabled && !bgm.paused) {
+                    bgm.volume = 0.05; 
+                }
+
+                currentAudio.play().catch(err => {
+                    console.warn(`Gagal memainkan fail: audio/${fileName}.`, err);
+                });
+
+                const restoreBGMVolume = () => {
+                    if (bgm && bgmEnabled && !bgm.paused) {
+                        bgm.volume = 0.25; 
+                    }
+                };
+
+                currentAudio.onended = restoreBGMVolume;
+                currentAudio.onpause = restoreBGMVolume;
+
+            } catch (e) {
+                console.error("Ralat memainkan audio tempatan:", e);
+            }
+        }
+
+        // --- App Navigation Logic ---
+
+        function startApp() {
+            const nameInput = document.getElementById('student-name').value;
+            const errorMsg = document.getElementById('error-msg');
+            
+            if (!nameInput.trim()) {
+                errorMsg.classList.remove('hidden');
+                document.getElementById('student-name').classList.add('border-red-500');
+                return;
+            }
+            
+            errorMsg.classList.add('hidden');
+            document.getElementById('student-name').classList.remove('border-red-500');
+
+            gameState.name = nameInput.trim();
+
+            // Set maskot sapaan permulaan
+            updateMascot("😊", `Selamat datang, ${gameState.name}! Jom belajar!`);
+
+            saveState(); 
+            showPage('page-notes');
+            loadNotes();
+        }
+
+        function goHomeWithoutReload() {
+            updateMascot("😊", "Jom mulakan modul kita!");
+            showPage('page-landing');
+        }
+
+        // PEDAGOGI: Kawalan Penukaran Tema Nota Pembelajaran
+        function selectTheme(themeName) {
+            document.getElementById('theme-selection-container').classList.add('hidden');
+            document.getElementById('theme-cards-container').classList.remove('hidden');
+            document.getElementById('selected-theme-title').innerText = themeName;
+            
+            updateMascot("💡", `Bagus! Mari pelajari perkataan tema ${themeName}.`);
+            renderFlashcardsForTheme(themeName);
+        }
+
+        function backToThemes() {
+            document.getElementById('theme-selection-container').classList.remove('hidden');
+            document.getElementById('theme-cards-container').classList.add('hidden');
+            
+            updateMascot("😊", "Sila pilih tema yang anda mahu pelajari.");
+        }
+
+        function loadNotes() {
+            // Mula-mula, tunjukkan halaman senarai tema
+            document.getElementById('theme-selection-container').classList.remove('hidden');
+            document.getElementById('theme-cards-container').classList.add('hidden');
+        }
+
+        // PEDAGOGI: Render flashcard dengan susun atur visual dinamik (Gambar di atas sekali, tanpa margin negatif & tiada pertindihan)
+        function renderFlashcardsForTheme(themeName) {
+            const container = document.getElementById('flashcard-container');
+            container.innerHTML = ''; 
+            
+            const categoryWords = vocabData.filter(item => item.category === themeName);
+            
+            categoryWords.forEach(item => {
+                const card = document.createElement('div');
+                // Menggunakan min-h-[360px] untuk mengekalkan ruang visual serta mengelakkan limpahan (overflow)
+                card.className = 'bg-pastelYellow rounded-[24px] p-5 pb-6 text-center border-4 border-pastelPink flex flex-col justify-between hover:scale-105 transition-all duration-200 min-h-[360px]';
+                card.innerHTML = `
+                    <div class="flex flex-col items-center justify-start h-full">
+                        <!-- GAMBAR: iOS-Style Cartoon sticker dengan bulatan pastel & ruang margin bawah (mb-4) -->
+                        <div class="w-16 h-16 rounded-full bg-pastelPink/30 flex items-center justify-center text-4xl shadow-inner select-none mb-4 shrink-0">
+                            ${item.emoji}
+                        </div>
+                        <!-- PERKATAAN ARAB: Jarak visual dinaikkan melalui leading-[2.2] dan pt-2 agar tidak bertindih dengan emoji -->
+                        <div class="font-arabic text-4xl sm:text-5xl text-primaryGreen leading-[2.2] pt-2 mb-2 w-full text-center" dir="rtl">
+                            ${item.word}
+                        </div>
+                        <!-- TRANSLITERASI -->
+                        <div class="font-bold text-gray-500 text-sm italic mb-2 w-full text-center">
+                            ${item.trans}
+                        </div>
+                        <!-- MAKSUD BAHASA MELAYU -->
+                        <div class="font-bold text-btnRed text-lg leading-tight mb-4 w-full text-center">
+                            ${item.meaning}
+                        </div>
+                    </div>
+                    <button onclick="playClick(); speak('${item.word}')" class="bg-blue-100 text-blue-700 font-bold py-2.5 px-4 rounded-xl hover:bg-blue-200 transition-colors mt-auto w-full shrink-0">
+                        🔊 Dengar
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // GAMIFICATION: Penghasilan Bunyi Countdown Elektronik Bebas Gendala (Web Audio API)
+        function playBeep(freq, duration) {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+
+                oscillator.type = 'sine';
+                oscillator.frequency.value = freq;
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + duration);
+            } catch (e) {
+                console.warn("AudioContext disekat atau gagal dilaraskan:", e);
+            }
+        }
+
+        // GAMIFICATION: Jujukan Countdown Sebelum Mula Permainan
+        function startCountdownSequence() {
+            showPage('page-countdown');
+            
+            const countText = document.getElementById('countdown-text');
+            const instructionNote = document.getElementById('instruction-note');
+            
+            countText.classList.remove('hidden');
+            instructionNote.classList.add('hidden');
+            
+            // Berhenti BGM seketika sekiranya ia aktif
+            if (bgm) {
+                bgm.pause();
+            }
+
+            let counts = ["3", "2", "1", "GO!"];
+            let idx = 0;
+
+            function runCountdownStep() {
+                if (idx < counts.length) {
+                    const currentVal = counts[idx];
+                    countText.innerText = currentVal;
+                    
+                    // Main bunyi bip countdown ( GO mempunyai suara pitch lebih tinggi )
+                    if (currentVal === "GO!") {
+                        playBeep(880, 0.4); 
+                        countText.className = "text-8xl font-bold text-emerald-500 select-none transition-all duration-300 transform scale-125 opacity-100";
+                    } else {
+                        playBeep(440, 0.2); 
+                        countText.className = "text-8xl font-bold text-btnRed select-none transition-all duration-300 transform scale-125 opacity-100";
+                    }
+
+                    // Animate Zoom In and Fade
+                    setTimeout(() => {
+                        countText.className = "text-8xl font-bold select-none transition-all duration-300 transform scale-75 opacity-0";
+                        idx++;
+                        setTimeout(runCountdownStep, 300);
+                    }, 700);
+
+                } else {
+                    // Countdown Selesai, Mulakan BGM secara Automatik jika diaktifkan
+                    initBGM();
+                    if (bgmEnabled) {
+                        bgm.play().catch(() => {});
+                    }
+                    
+                    // Paparkan Skrin Persediaan (Instruction Note) selama 1 saat
+                    countText.classList.add('hidden');
+                    instructionNote.classList.remove('hidden');
+                    updateMascot("🎯", "Sedia? Dengar audio dengan teliti!");
+
+                    setTimeout(() => {
+                        instructionNote.classList.add('hidden');
+                        goToGame();
+                    }, 1500);
+                }
+            }
+
+            // Mulakan langkah pertama countdown
+            setTimeout(runCountdownStep, 300);
+        }
+
+        // Helper untuk pemilihan soalan rawak tanpa ulangan
+        function getRandomSubset(arr, n) {
+            let shuffled = [...arr].sort(() => Math.random() - 0.5);
+            return shuffled.slice(0, n);
+        }
+
+        // GAMIFICATION: Permainan 15 Soalan Berperingkat Rawak
+        function goToGame() {
+            const level1 = vocabData.filter(v => v.level === 1);
+            const level2 = vocabData.filter(v => v.level === 2);
+            const level3 = vocabData.filter(v => v.level === 3);
+
+            // Rawak unik mengikut bilangan aras yang diminta
+            const selected1 = getRandomSubset(level1, 8); // 8 soalan @ Aras 1
+            const selected2 = getRandomSubset(level2, 4); // 4 soalan @ Aras 2
+            const selected3 = getRandomSubset(level3, 3); // 3 soalan @ Aras 3
+
+            // Gabung dan rawakkan keseluruhan 15 soalan
+            gameState.shuffledQuestions = [...selected1, ...selected2, ...selected3].sort(() => Math.random() - 0.5);
+            
+            gameState.score = 0;
+            gameState.currentQuestionIndex = 0;
+            gameState.correctCount = 0;
+            gameState.incorrectCount = 0;
+            gameState.startTime = Date.now(); 
+            gameState.endTime = null;
+            
+            isAnswerProcessing = false;
+            
+            resetSubmitButton();
+            saveState(); 
+            showPage('page-game');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            isAnswerProcessing = false;
+            const q = gameState.shuffledQuestions[gameState.currentQuestionIndex];
+            
+            // INTERVENSI KAJIAN: Penjelmaan Visual nombor Aras menggunakan Javascript Map
+            const levelMap = {
+                1: "🟢 Mudah",
+                2: "🟡 Sederhana",
+                3: "🔴 Sukar"
+            };
+
+            // Update Top Stats
+            document.getElementById('display-name').innerText = gameState.name;
+            document.getElementById('display-level').innerText = levelMap[q.level] || q.level;
+            document.getElementById('display-progress').innerText = `${gameState.currentQuestionIndex + 1}/${gameState.shuffledQuestions.length}`;
+            document.getElementById('display-score').innerText = gameState.score;
+
+            // Update Progress Bar
+            const progressPercent = ((gameState.currentQuestionIndex) / gameState.shuffledQuestions.length) * 100;
+            document.getElementById('progress-bar-fill').style.width = `${progressPercent}%`;
+
+            const container = document.getElementById('choices-container');
+            container.innerHTML = "";
+
+            let choices = [q.word];
+            let otherWords = vocabData.filter(v => v.word !== q.word);
+            
+            otherWords.sort(() => Math.random() - 0.5);
+            choices.push(otherWords[0].word, otherWords[1].word, otherWords[2].word);
+            choices.sort(() => Math.random() - 0.5);
+
+            choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'bg-pastelGreen text-primaryGreen font-arabic text-4xl sm:text-5xl pt-9 pb-5 rounded-[20px] btn-bounce cursor-pointer leading-[2.0] transition-all';
+                btn.style.boxShadow = "0 6px 0 #95D5B2";
+                btn.innerText = choice;
+                btn.onclick = (e) => {
+                    playClick();
+                    checkAnswer(choice, q, e.target);
+                };
+                container.appendChild(btn);
+            });
+            
+            // Reset Maskot kepada sapaan biasa semasa soalan bermula
+            updateMascot("🤔", "Klik butang biru di atas untuk mendengar perkataan.");
+        }
+
+        function playQuestionAudio() {
+            speak(gameState.shuffledQuestions[gameState.currentQuestionIndex].word);
+        }
+
+        // GAMIFICATION: Reaksi jawapan betul / salah dengan respons Maskot Ceria
+        function checkAnswer(selected, q, btnElement) {
+            if (isAnswerProcessing) return; 
+            isAnswerProcessing = true;
+
+            const feedbackArea = document.getElementById('feedback-area');
+            const isCorrect = (selected === q.word);
+
+            // Nyahaktif semua butang & tonjolkan jawapan yang betul
+            const allBtns = document.getElementById('choices-container').querySelectorAll('button');
+            allBtns.forEach(b => {
+                b.style.pointerEvents = 'none';
+                if(b.innerText === q.word) {
+                    b.classList.remove('bg-pastelGreen');
+                    b.classList.add('bg-green-400', 'text-white');
+                    b.style.boxShadow = "0 6px 0 #16A34A";
+                }
+            });
+
+            if (isCorrect) {
+                gameState.score += q.level;
+                gameState.correctCount++;
+                document.getElementById('display-score').innerText = gameState.score;
+                
+                // 1. Kesan Bunyi Betul
+                playSystemSound('correct.mp3');
+
+                // 2. Mesej Rawak yang Ceria
+                const praises = ["Syabas! 🎉", "Mumtaz! 🌟", "Hebat! 🏆", "Tahniah! 👏"];
+                const randomPraise = praises[Math.floor(Math.random() * praises.length)];
+                feedbackArea.innerHTML = `<span class="text-green-600 drop-shadow-md text-3xl font-bold flex items-center justify-center gap-2">⭐ ${randomPraise} ⭐</span>`;
+                
+                // 3. Maklum balas maskot
+                updateMascot("😊", `${randomPraise} Jawapan anda cemerlang!`);
+
+                // 4. Letusan Confetti Bintang Zarah
+                triggerConfetti();
+
+                // 1.5 saat terus ke soalan seterusnya
+                setTimeout(() => {
+                    nextQuestion();
+                }, 1500);
+
+            } else {
+                gameState.incorrectCount++;
+
+                // 1. Kesan Bunyi Salah
+                playSystemSound('wrong.mp3');
+
+                // 2. Animasi Shake (Getaran)
+                btnElement.classList.add('animate-shake');
+                btnElement.classList.remove('bg-pastelGreen');
+                btnElement.classList.add('bg-red-400', 'text-white');
+                btnElement.style.boxShadow = "0 6px 0 #DC2626";
+                
+                // 3. Maklum balas maskot
+                updateMascot("😢", "Cuba lagi! Anda pasti boleh!");
+
+                // 4. Mesej Makluman Jawapan Sebenar
+                feedbackArea.innerHTML = `<span class="text-red-500 drop-shadow-md text-xl">❌ Jawapan yang betul ialah: <span class="font-arabic text-3xl font-bold ml-1">${q.word}</span></span>`;
+
+                // 2 saat terus ke soalan seterusnya
+                setTimeout(() => {
+                    btnElement.classList.remove('animate-shake');
+                    nextQuestion();
+                }, 2000);
+            }
+        }
+
+        function nextQuestion() {
+            const feedbackArea = document.getElementById('feedback-area');
+            feedbackArea.innerHTML = "";
+            gameState.currentQuestionIndex++;
+            
+            saveState();
+
+            if (gameState.currentQuestionIndex < gameState.shuffledQuestions.length) {
+                loadQuestion();
+            } else {
+                showPage('page-results');
+                showResults();
+            }
+        }
+
+        function showResults() {
+            gameState.endTime = Date.now();
+            saveState();
+
+            document.getElementById('progress-bar-fill').style.width = `100%`;
+            showPage('page-results');
+            
+            const maxScore = 25; // 8*1 + 4*2 + 3*3 = 25 markah penuh baharu
+            const accuracy = Math.round((gameState.score / maxScore) * 100); 
+            
+            const totalTimeMs = gameState.endTime - gameState.startTime;
+            const minutes = Math.floor(totalTimeMs / 60000);
+            const seconds = Math.floor((totalTimeMs % 60000) / 1000);
+            const timeString = minutes > 0 ? `${minutes} minit ${seconds} saat` : `${seconds} saat`;
+            
+            document.getElementById('final-name').innerText = gameState.name;
+            document.getElementById('final-score').innerText = gameState.score;
+            document.getElementById('final-correct').innerText = gameState.correctCount;
+            document.getElementById('final-incorrect').innerText = gameState.incorrectCount;
+            document.getElementById('final-time').innerText = timeString;
+            document.getElementById('final-accuracy').innerText = `${accuracy}%`;
+
+            let title = document.getElementById('result-title');
+            if(accuracy >= 80) {
+                title.innerText = "Mumtaz! (Cemerlang) 🌟";
+                title.className = "text-green-600 text-4xl font-bold mb-4";
+                updateMascot("🏆", `Tahniah ${gameState.name}! Pencapaian anda sangat hebat!`);
+            } else if (accuracy >= 50) {
+                title.innerText = "Jayyid Jiddan! (Sangat Baik) 👍";
+                title.className = "text-blue-600 text-4xl font-bold mb-4";
+                updateMascot("🏆", `Sangat baik, ${gameState.name}! Jom lihat sijil digital anda.`);
+            } else {
+                title.innerText = "Maqbul! (Lulus - Cuba Lagi) 💪";
+                title.className = "text-orange-500 text-4xl font-bold mb-4";
+                updateMascot("🏆", `Syabas kerana menamatkan permainan! Mari terus berlatih.`);
+            }
+        }
+
+        // GAMIFICATION: Kemas kini emosi dan teks dialog maskot
+        function updateMascot(emotion, text) {
+            const avatar = document.getElementById('mascot-avatar');
+            const bubble = document.getElementById('mascot-bubble');
+            if (avatar && bubble) {
+                avatar.innerText = emotion;
+                bubble.innerText = text;
+            }
+        }
+
+        // PEDAGOGI: Jana Sijil Digital dengan Data Sesi Sebenar
+        function generateCertificate() {
+            const modal = document.getElementById('certificate-modal');
+            const certName = document.getElementById('cert-name');
+            const certScore = document.getElementById('cert-score');
+            const certAccuracy = document.getElementById('cert-accuracy');
+            const certDate = document.getElementById('cert-date');
+
+            const maxScore = 25;
+            const accuracy = Math.round((gameState.score / maxScore) * 100); 
+
+            // Masukkan data dinamik murid ke sijil
+            certName.innerText = gameState.name.toUpperCase();
+            certScore.innerText = `${gameState.score} / ${maxScore}`;
+            certAccuracy.innerText = `${accuracy}%`;
+            certDate.innerText = `Tarikh Pencapaian: ${new Date().toLocaleDateString('ms-MY')}`;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeCertificate() {
+            const modal = document.getElementById('certificate-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // PEDAGOGI: Simulasi Muat Turun Sijil PDF / Cetak Pelayar Standard
+        function simulatePDFDownload() {
+            updateMascot("💾", "Membuka menu cetakan PDF pelayar anda...");
+            window.print(); 
+        }
+
+        function restartGame() {
+            goToGame();
+        }
+        
+        async function sendToTeacher() {
+            const btn = document.getElementById('btn-submit-teacher');
+            const msg = document.getElementById('submit-message');
+            
+            btn.disabled = true;
+            btn.innerText = "⏳ Sedang Menghantar...";
+            btn.classList.remove('btn-bounce');
+            
+            const maxScore = 25;
+            const finalAccuracy = Math.round((gameState.score / maxScore) * 100);
+            
+            const totalTimeMs = gameState.endTime - gameState.startTime;
+            const minutes = Math.floor(totalTimeMs / 60000);
+            const seconds = Math.floor((totalTimeMs % 60000) / 1000);
+            const totalTimeString = minutes > 0 ? `${minutes} minit ${seconds} saat` : `${seconds} saat`;
+
+            const payload = {
+                nama: gameState.name,
+                skor: gameState.score,
+                ketepatan: finalAccuracy,
+                betul: gameState.correctCount,
+                salah: gameState.incorrectCount,
+                masa: totalTimeString,
+                tarikh: new Date().toLocaleDateString('ms-MY')
+            };
+
+            try {
+                await fetch('https://script.google.com/macros/s/AKfycbzJw2dA7urRxB3yRFN-mxnNGo4cP7sQJp_aF3VdD226KWOTgNirvZqjfsgkuDjTfg1t/exec', {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                btn.innerText = "✅ Keputusan Telah Dihantar";
+                btn.style.boxShadow = "none";
+                btn.classList.remove('bg-purple-500');
+                btn.classList.add('bg-gray-400');
+                
+                msg.innerText = "✅ Keputusan berjaya dihantar kepada guru.";
+                msg.className = "block font-bold text-green-600 mt-2 text-lg";
+
+            } catch (error) {
+                btn.disabled = false;
+                btn.innerText = "📤 Hantar Keputusan Kepada Guru";
+                btn.classList.add('btn-bounce');
+                
+                msg.innerText = "❌ Penghantaran gagal. Sila cuba lagi.";
+                msg.className = "block font-bold text-red-500 mt-2 text-lg";
+            }
+        }
+
+        function resetSubmitButton() {
+            const btn = document.getElementById('btn-submit-teacher');
+            const msg = document.getElementById('submit-message');
+            
+            if (btn && msg) {
+                btn.disabled = false;
+                btn.innerText = "📤 Hantar Keputusan Kepada Guru";
+                btn.style.boxShadow = "0 6px 0 #7E22CE";
+                btn.classList.remove('bg-gray-400');
+                btn.classList.add('bg-purple-500', 'btn-bounce');
+                
+                msg.innerText = "";
+                msg.className = "hidden font-bold text-lg";
+            }
+        }
+
+        // GAMIFICATION: Canvas-based Confetti/Star Burst System
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function triggerConfetti() {
+            canvas.classList.remove('hidden');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particles = [];
+            
+            // Hasilkan zarah bulat dan bintang berwana-warni
+            for (let i = 0; i < 50; i++) {
+                particles.push({
+                    x: window.innerWidth / 2,
+                    y: window.innerHeight / 2 - 100,
+                    vx: (Math.random() - 0.5) * 16,
+                    vy: (Math.random() - 0.5) * 16 - 4,
+                    size: Math.random() * 8 + 5,
+                    color: `hsl(${Math.random() * 360}, 100%, 70%)`,
+                    alpha: 1,
+                    decay: Math.random() * 0.02 + 0.015,
+                    isStar: Math.random() > 0.4
+                });
+            }
+            animateParticles();
+        }
+
+        function animateParticles() {
+            if (particles.length === 0) {
+                canvas.classList.add('hidden');
+                return;
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.25; // Graviti jatuh lembut
+                p.alpha -= p.decay;
+                
+                if (p.alpha <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+                
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = p.color;
+                
+                if (p.isStar) {
+                    drawStar(ctx, p.x, p.y, 5, p.size, p.size / 2);
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+            requestAnimationFrame(animateParticles);
+        }
+
+        function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
+            let rot = Math.PI / 2 * 3;
+            let x = cx;
+            let y = cy;
+            let step = Math.PI / spikes;
+
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - outerRadius);
+            for (let i = 0; i < spikes; i++) {
+                x = cx + Math.cos(rot) * outerRadius;
+                y = cy + Math.sin(rot) * outerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+
+                x = cx + Math.cos(rot) * innerRadius;
+                y = cy + Math.sin(rot) * innerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+            }
+            ctx.lineTo(cx, cy - outerRadius);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // --- Fungsi Storan Tempatan (localStorage) ---
+        
+        function saveState() {
+            localStorage.setItem('ceria_gameState', JSON.stringify(gameState));
+        }
+
+        function loadState() {
+            const savedState = localStorage.getItem('ceria_gameState');
+            if (savedState) {
+                gameState = JSON.parse(savedState);
+                
+                // Jika sedang bermain di page-game dan belum tamat
+                if (gameState.name && gameState.currentQuestionIndex > 0 && gameState.currentQuestionIndex < gameState.shuffledQuestions.length) {
+                    document.getElementById('student-name').value = gameState.name;
+                    showPage('page-game');
+                    loadQuestion();
+                } 
+                // Jika baru masukkan nama dan sedang membaca di page-notes
+                else if (gameState.name && gameState.currentQuestionIndex === 0) {
+                    document.getElementById('student-name').value = gameState.name;
+                    showPage('page-notes');
+                    loadNotes();
+                }
+                // Jika permainan sudah tamat sepenuhnya, bersihkan storan lama
+                else if (gameState.currentQuestionIndex >= gameState.shuffledQuestions.length) {
+                    clearState();
+                }
+            }
+        }
+
+        function clearState() {
+            localStorage.removeItem('ceria_gameState');
+        }
+        
+        function clearAndGoHome() {
+            clearState(); // Padamkan data nama/markah lama jika kembali ke muka depan
+            location.reload();
+        }
+
+        // Muat turun (load) data dari storan apabila halaman di-refresh
+        window.addEventListener('load', loadState);
+
+        // Allow 'Enter' key to start game on landing page
+        document.getElementById('student-name').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                playClick();
+                startApp();
+            }
+        });
+
+    </script>
+</body>
+</html>
